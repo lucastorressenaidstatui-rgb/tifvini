@@ -7,6 +7,7 @@ use App\Models\Usuario;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class LoginController extends Controller
 {
@@ -18,10 +19,9 @@ class LoginController extends Controller
             'perfil' => ['sometimes', 'required', 'in:aluno,professor'],
         ]);
 
-        $usuario = Usuario::where('email', $credentials['email'])
-            ->where('senha', md5($credentials['senha']))->first();
+        $usuario = Usuario::where('email', $credentials['email'])->first();
 
-        if (! $usuario) {
+        if (! $usuario || ! $this->senhaValida($usuario, $credentials['senha'])) {
             return response()->json(['erro' => 's', 'mensagem' => 'Email ou senha inválidos'], 422);
         }
 
@@ -60,10 +60,9 @@ class LoginController extends Controller
             'senha' => 'required',
         ]);
 
-        $usuario = Usuario::where('email', '=', $request->email)
-            ->where('senha', '=', md5($request->senha))->first();
+        $usuario = Usuario::where('email', $request->email)->first();
 
-        if ($usuario) {
+        if ($usuario && $this->senhaValida($usuario, $request->senha)) {
             $token = new TokenUsuario;
             TokenUsuario::where('usuario_id', '=', $usuario->id)->delete();
             $token->usuario_id = $usuario->id;
@@ -76,5 +75,21 @@ class LoginController extends Controller
             return response()->json(['erro' => 's', 'mensagem' => 'Email ou senha inválidos'], 200);
         }
 
+    }
+
+    private function senhaValida(Usuario $usuario, string $senha): bool
+    {
+        if (preg_match('/^[a-f0-9]{32}$/i', $usuario->senha)) {
+            if ($usuario->senha !== md5($senha)) {
+                return false;
+            }
+
+            $usuario->senha = Hash::make($senha);
+            $usuario->save();
+
+            return true;
+        }
+
+        return Hash::check($senha, $usuario->senha);
     }
 }

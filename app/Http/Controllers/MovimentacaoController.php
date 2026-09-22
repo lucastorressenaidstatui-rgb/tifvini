@@ -2,16 +2,33 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Frequencia;
 use App\Models\Movimentacao;
 use App\Models\Usuario;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class MovimentacaoController extends Controller
 {
+    public function registro(Request $request): View|RedirectResponse
+    {
+        $usuario = Usuario::find($request->session()->get('usuario_id'));
+
+        if (! $usuario) {
+            return redirect()->route('login');
+        }
+
+        if ($usuario->is_professor) {
+            return redirect()->route('historico');
+        }
+
+        return view('registro', ['usuario' => $usuario]);
+    }
+
     public function store(Request $request): JsonResponse
     {
         $usuario = Usuario::find($request->session()->get('usuario_id'));
@@ -21,7 +38,6 @@ class MovimentacaoController extends Controller
         }
 
         $dados = $request->validate([
-            'nome' => ['required', 'string', 'max:255'],
             'matricula' => ['required', 'string', 'max:50'],
             'turma' => ['required', 'string', 'max:100'],
             'tipo' => ['required', 'in:Entrada,Saída'],
@@ -33,14 +49,18 @@ class MovimentacaoController extends Controller
         $momento = Carbon::createFromFormat('Y-m-d H:i', $dados['data'].' '.$dados['horario'], 'America/Sao_Paulo')->utc();
 
         if ($dados['tipo'] === 'Saída') {
-            Movimentacao::create([
-                'usuario_id' => $usuario->id,
-                'nome' => $dados['nome'],
-                'matricula' => $dados['matricula'],
-                'turma' => $dados['turma'],
-                'saida' => $momento,
-                'observacao' => $dados['observacao'] ?? null,
-            ]);
+            DB::transaction(function () use ($usuario, $dados, $momento): void {
+                Movimentacao::create([
+                    'usuario_id' => $usuario->id,
+                    'nome' => $usuario->nome,
+                    'matricula' => $dados['matricula'],
+                    'turma' => $dados['turma'],
+                    'saida' => $momento,
+                    'observacao' => $dados['observacao'] ?? null,
+                ]);
+
+                $this->registrarFrequencia($dados, 'saida', $usuario->nome);
+            });
 
             return response()->json(['mensagem' => 'Saída registrada com sucesso.'], 201);
         }
@@ -56,7 +76,10 @@ class MovimentacaoController extends Controller
             return response()->json(['mensagem' => 'Não há uma saída anterior sem retorno para esta matrícula.'], 422);
         }
 
-        $saida->update(['retorno' => $momento]);
+        DB::transaction(function () use ($saida, $momento, $dados, $usuario): void {
+            $saida->update(['retorno' => $momento]);
+            $this->registrarFrequencia($dados, 'entrada', $usuario->nome);
+        });
 
         return response()->json(['mensagem' => 'Entrada registrada com sucesso.']);
     }
@@ -74,7 +97,9 @@ class MovimentacaoController extends Controller
             return redirect()->route('login');
         }
 
-        abort_if($usuario->is_professor, 403);
+        if ($usuario->is_professor) {
+            return redirect()->route('historico');
+        }
 
         $movimentacoes = Movimentacao::where('usuario_id', $usuario->id)
             ->orderByDesc('saida')
@@ -140,5 +165,19 @@ class MovimentacaoController extends Controller
                 'retorno' => $movimentacao->retorno?->toIso8601String(),
                 'observacao' => $movimentacao->observacao,
             ])->all();
+    }
+
+    /** @param array{matricula: string, turma: string, data: string, horario: string, observacao?: ?string} $dados */
+    private function registrarFrequencia(array $dados, string $tipo, string $nome): void
+    {
+        Frequencia::create([
+            'nome_aluno' => $nome,
+            'matricula' => $dados['matricula'],
+            'turma' => $dados['turma'],
+            'tipo_registro' => $tipo,
+            'data_registro' => $dados['data'],
+            'hora_registro' => $dados['horario'],
+            'observacao' => $dados['observacao'] ?? null,
+        ]);
     }
 }

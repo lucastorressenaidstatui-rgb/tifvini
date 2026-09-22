@@ -15,7 +15,7 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::get('/cadastro_usuario', [UsuarioController::class, 'cadastro_usuario_html']);
 
-Route::view('/registro', 'registro')->name('registro');
+Route::get('/registro', [MovimentacaoController::class, 'registro'])->name('registro');
 Route::post('/registro', [MovimentacaoController::class, 'store'])->name('registro.store');
 Route::get('/meu-historico', [MovimentacaoController::class, 'meuHistorico'])->name('meu-historico');
 

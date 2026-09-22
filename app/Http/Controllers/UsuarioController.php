@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Usuario;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class UsuarioController extends Controller
 {
@@ -33,7 +34,7 @@ class UsuarioController extends Controller
         try {
             $usuario->nome = $request->nome;
             $usuario->email = $request->email;
-            $usuario->senha = md5($request->senha);
+            $usuario->senha = Hash::make($request->senha);
             $usuario->cpf = $request->cpf;
             $usuario->data_nascimento = $request->data_nascimento;
             $usuario->is_professor = $request->input('perfil') === 'professor';

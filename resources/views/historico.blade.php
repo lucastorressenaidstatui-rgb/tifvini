@@ -3,21 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Histórico de movimentações | SESI</title>
+    <title>Dashboard do professor | Controle de frequência</title>
     <link rel="stylesheet" href="{{ asset('css/historico.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/auth-theme.css') }}">
 </head>
 <body>
     <aside class="sidebar">
-        <div class="brand" aria-label="SESI">SESI</div>
+        <p class="sidebar-title">Controle de frequência</p>
         <nav aria-label="Navegação principal">
-            <a href="{{ route('registro') }}"><span aria-hidden="true">⇄</span> Movimentações</a>
-            <a class="active" href="{{ url('/historico') }}" aria-current="page"><span aria-hidden="true">▥</span> Histórico</a>
-            <a href="{{ url('/cadastro_usuario') }}"><span aria-hidden="true">＋</span> Cadastrar usuário</a>
+            <a class="active" href="{{ route('historico') }}" aria-current="page"><span aria-hidden="true">▥</span> Dashboard</a>
         </nav>
         <form action="{{ route('logout') }}" method="POST" class="logout-form">@csrf<button type="submit" class="button">Sair da conta</button></form>
     </aside>
     <main>
-        <header class="heading"><h1>Histórico de movimentações</h1><span class="teacher-badge">Área do professor</span></header>
+        <header class="heading"><h1>Dashboard do professor</h1><span class="teacher-badge">Área do professor</span></header>
         <form class="filters card" id="filters">
             <div class="search"><label for="search">Aluno ou matrícula</label><input type="search" id="search" placeholder="Buscar aluno..."></div>
             <div><label for="class-filter">Turma</label><select id="class-filter"><option value="">Todas as turmas</option></select></div>

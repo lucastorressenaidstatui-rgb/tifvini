@@ -5,7 +5,6 @@ button, input, select { font: inherit; }
 a { color: inherit; text-decoration: none; }
 :focus-visible { outline: 3px solid #f5a56d; outline-offset: 3px; }
 .sidebar { width: 242px; position: fixed; inset: 0 auto 0 0; padding: 36px 24px; background: white; border-right: 1px solid var(--line); }
-.brand { font-size: 35px; font-weight: 900; font-style: italic; letter-spacing: -2px; color: #e42230; }
 nav { display: grid; gap: 10px; margin-top: 32px; }
 nav a { padding: 14px 12px; display: flex; gap: 12px; align-items: center; border-radius: 9px; font-weight: 600; font-size: 13px; }
 nav a span { font-size: 20px; line-height: 1; }
@@ -61,4 +60,4 @@ dialog::backdrop { background: #19233380; }dialog > p { margin: 0 24px 20px; col
 #filter-error { color: #b42318; }
 @media (min-width: 1800px) { main { margin-right: auto; } }
 @media (max-width: 1250px) { main { padding: 30px 24px; }.sidebar { width: 205px; padding: 30px 16px; }main { margin-left: 205px; }.filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }.filters .search { grid-column: 1 / -1; }.stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }.overview { grid-template-columns: minmax(0, 1fr); } }
-@media (max-width: 700px) { .sidebar { width: auto; position: static; padding: 16px; display: flex; align-items: center; gap: 14px; border-right: 0; border-bottom: 1px solid var(--line); }.brand { font-size: 28px; }nav { display: flex; flex: 1; gap: 4px; margin: 0; overflow-x: auto; }nav a { padding: 10px 8px; font-size: 11px; white-space: nowrap; }nav a span { display: none; }main { margin: 0; padding: 26px 16px; }.heading { align-items: flex-start; flex-direction: column; gap: 12px; }.teacher-badge { padding: 7px 10px; font-size: 11px; }.filters { padding: 18px; gap: 14px; }.stats { gap: 12px; }.stat { padding: 18px 14px; }.stat strong { font-size: 29px; }.stat small { line-height: 1.6; }.section-heading { padding: 20px; } }
+@media (max-width: 700px) { .sidebar { width: auto; position: static; padding: 16px; display: flex; align-items: center; gap: 14px; border-right: 0; border-bottom: 1px solid var(--line); }nav { display: flex; flex: 1; gap: 4px; margin: 0; overflow-x: auto; }nav a { padding: 10px 8px; font-size: 11px; white-space: nowrap; }nav a span { display: none; }main { margin: 0; padding: 26px 16px; }.heading { align-items: flex-start; flex-direction: column; gap: 12px; }.teacher-badge { padding: 7px 10px; font-size: 11px; }.filters { padding: 18px; gap: 14px; }.stats { gap: 12px; }.stat { padding: 18px 14px; }.stat strong { font-size: 29px; }.stat small { line-height: 1.6; }.section-heading { padding: 20px; } }

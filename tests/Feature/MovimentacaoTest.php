@@ -13,7 +13,7 @@ class MovimentacaoTest extends TestCase
     private function criarUsuario(bool $professor = false): Usuario
     {
         $usuario = new Usuario;
-        $usuario->nome = $professor ? 'Professor' : 'Aluno';
+        $usuario->nome = $professor ? 'Professor' : 'Aluno Teste';
         $usuario->email = $professor ? 'professor@example.test' : 'aluno@example.test';
         $usuario->senha = md5('senha-teste');
         $usuario->data_nascimento = '2000-01-01';
@@ -45,6 +45,14 @@ class MovimentacaoTest extends TestCase
             ->postJson(route('registro.store'), $this->dados())
             ->assertCreated();
 
+        $this->assertDatabaseHas('frequencias', [
+            'nome_aluno' => 'Aluno Teste',
+            'matricula' => '20260001',
+            'tipo_registro' => 'saida',
+            'data_registro' => '2026-09-21',
+            'hora_registro' => '10:00',
+        ]);
+
         $this->withSession(['usuario_id' => $professor->id])
             ->get(route('historico'))
             ->assertOk()
@@ -58,6 +66,14 @@ class MovimentacaoTest extends TestCase
         $this->withSession(['usuario_id' => $aluno->id])
             ->postJson(route('registro.store'), $this->dados('Entrada', '10:30'))
             ->assertOk();
+
+        $this->assertDatabaseHas('frequencias', [
+            'matricula' => '20260001',
+            'tipo_registro' => 'entrada',
+            'data_registro' => '2026-09-21',
+            'hora_registro' => '10:30',
+        ]);
+        $this->assertDatabaseCount('frequencias', 2);
 
         $this->withSession(['usuario_id' => $professor->id])
             ->getJson(route('historico.movimentacoes'))
@@ -80,18 +96,26 @@ class MovimentacaoTest extends TestCase
             ->assertUnprocessable();
 
         $this->assertDatabaseCount('movimentacoes', 0);
+        $this->assertDatabaseCount('frequencias', 0);
     }
 
     public function test_apenas_alunos_podem_registrar_e_apenas_professores_podem_listar(): void
     {
+        $this->get(route('registro'))->assertRedirect(route('login'));
         $this->postJson(route('registro.store'), $this->dados())->assertForbidden();
         $this->getJson(route('historico.movimentacoes'))->assertRedirect(route('login'));
 
         $professor = $this->criarUsuario(true);
         $this->withSession(['usuario_id' => $professor->id])
+            ->get(route('registro'))->assertRedirect(route('historico'));
+        $this->withSession(['usuario_id' => $professor->id])
+            ->get(route('historico'))->assertOk()->assertSee('Dashboard do professor');
+        $this->withSession(['usuario_id' => $professor->id])
             ->postJson(route('registro.store'), $this->dados())->assertForbidden();
 
         $aluno = $this->criarUsuario();
+        $this->withSession(['usuario_id' => $aluno->id])
+            ->get(route('registro'))->assertOk();
         $this->withSession(['usuario_id' => $aluno->id])
             ->getJson(route('historico.movimentacoes'))->assertForbidden();
     }
@@ -131,13 +155,57 @@ class MovimentacaoTest extends TestCase
             ->assertDontSee('Minha observação');
     }
 
-    public function test_meu_historico_exige_conta_de_aluno(): void
+    public function test_meu_historico_pertence_ao_aluno_logado_mesmo_se_nome_enviado_for_de_outro_aluno(): void
+    {
+        $registrador = $this->criarUsuario();
+        $aluno = new Usuario;
+        $aluno->nome = 'Outro Aluno';
+        $aluno->email = 'aluno-identificado@example.test';
+        $aluno->senha = md5('senha-teste');
+        $aluno->data_nascimento = '2000-01-01';
+        $aluno->save();
+
+        $dados = $this->dados();
+        $dados['nome'] = $aluno->nome;
+
+        $this->withSession(['usuario_id' => $registrador->id])
+            ->postJson(route('registro.store'), $dados)
+            ->assertCreated();
+
+        $this->assertDatabaseHas('movimentacoes', [
+            'usuario_id' => $registrador->id,
+            'nome' => $registrador->nome,
+            'matricula' => '20260001',
+        ]);
+        $this->assertDatabaseHas('frequencias', ['nome_aluno' => $registrador->nome, 'matricula' => '20260001']);
+
+        $this->withSession(['usuario_id' => $aluno->id])
+            ->get(route('meu-historico'))
+            ->assertOk()
+            ->assertSee('Você ainda não registrou nenhuma saída.');
+
+        $this->withSession(['usuario_id' => $registrador->id])
+            ->get(route('meu-historico'))
+            ->assertOk()
+            ->assertSee('Aguardando retorno');
+
+        $this->withSession(['usuario_id' => $registrador->id])
+            ->postJson(route('registro.store'), $this->dados('Entrada', '10:30'))
+            ->assertOk();
+
+        $this->withSession(['usuario_id' => $registrador->id])
+            ->get(route('meu-historico'))
+            ->assertOk()
+            ->assertSee('Concluído');
+    }
+
+    public function test_meu_historico_redireciona_professor_ao_historico_geral(): void
     {
         $this->get(route('meu-historico'))->assertRedirect(route('login'));
 
         $professor = $this->criarUsuario(true);
         $this->withSession(['usuario_id' => $professor->id])
-            ->get(route('meu-historico'))->assertForbidden();
+            ->get(route('meu-historico'))->assertRedirect(route('historico'));
     }
 
     public function test_relatorio_filtra_turma_e_periodo_para_professor(): void
