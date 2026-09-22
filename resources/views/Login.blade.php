@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Entrar | SESI</title>
+    @vite('resources/js/login.js')
+    <style>
+        :root { color-scheme: dark; --ink: #f5f9ff; --muted: #a3b1c4; --cyan: #22c7e8; --red: #e94d61; }
+        * { box-sizing: border-box; }
+        body { margin: 0; min-height: 100vh; background: radial-gradient(circle at 25% 42%, #102d42 0, #091522 42%, #050a12 78%); color: var(--ink); font-family: "Segoe UI", sans-serif; }
+        .login-shell { width: min(100%, 1440px); min-height: 100vh; margin: auto; padding: 28px clamp(20px, 3vw, 48px); display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(340px, .85fr); align-items: center; gap: clamp(16px, 3vw, 44px); }
+        .artwork { min-width: 0; }
+        .artwork img { display: block; width: 100%; height: auto; max-height: 94vh; object-fit: contain; filter: drop-shadow(0 26px 50px #0008); }
+        .login-content { width: 100%; max-width: 470px; justify-self: center; padding: clamp(28px, 4vw, 48px); border: 1px solid #36526a; border-radius: 22px; background: linear-gradient(145deg, #14243aef, #0b1524f5); box-shadow: 0 26px 80px #0008, 0 0 45px #0fc4e013; backdrop-filter: blur(10px); }
+        h1 { margin: 0; font-size: clamp(1.9rem, 3vw, 2.5rem); letter-spacing: -.04em; }
+        .intro { margin: 10px 0 30px; color: var(--muted); line-height: 1.5; }
+        form { display: grid; gap: 20px; }
+        fieldset { padding: 0; margin: 0; border: 0; }
+        legend, .field label { display: block; margin-bottom: 9px; font-size: .88rem; font-weight: 600; }
+        .profile-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .profile-option { position: relative; }
+        .profile-option input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+        .profile-option label { display: block; padding: 13px 12px; border: 1px solid #3a5066; border-radius: 10px; background: #0d1b2c; color: #dbe8f5; text-align: center; font-weight: 600; cursor: pointer; transition: border-color .15s, background .15s; }
+        .profile-option input:checked + label { border-color: var(--cyan); background: #0d3b4d; color: #d8fbff; box-shadow: inset 0 0 0 1px #22c7e855; }
+        .profile-option input:focus-visible + label { outline: 3px solid var(--cyan); outline-offset: 3px; }
+        .field input { display: block; width: 100%; min-height: 52px; padding: 13px 15px; border: 1px solid #3a5066; border-radius: 10px; background: #0a1727; color: var(--ink); font: inherit; transition: border-color .15s, box-shadow .15s; }
+        .field input::placeholder { color: #8192a8; }
+        .field input:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 0 4px #22c7e820; }
+        #login-error { min-height: 1.2em; margin: -5px 0 0; color: #ff9fa9; font-size: .87rem; }
+        button { width: 100%; min-height: 52px; border: 0; border-radius: 10px; background: linear-gradient(135deg, #13a9ce, #28d4ea); color: #041724; font: inherit; font-weight: 800; cursor: pointer; box-shadow: 0 10px 30px #08abd32a; transition: transform .15s, filter .15s; }
+        button:hover { transform: translateY(-2px); filter: brightness(1.08); }
+        button:focus-visible { outline: 3px solid #7beaff; outline-offset: 4px; }
+        button:disabled { opacity: .6; cursor: wait; transform: none; }
+        .register-link { margin: 0; color: var(--muted); text-align: center; font-size: .88rem; }
+        .register-link a { color: #6fe8f6; font-weight: 700; }
+        .register-link a:hover { text-decoration: underline; }
+        @media (max-width: 850px) { .login-shell { grid-template-columns: 1fr; min-height: 100vh; gap: 0; padding: 20px 16px 36px; } .artwork { max-width: 600px; width: 100%; margin: auto; } .artwork img { max-height: 370px; } .login-content { max-width: 520px; } }
+        @media (max-width: 420px) { .login-content { padding: 26px 20px; border-radius: 18px; } .artwork img { max-height: 290px; } }
+    </style>
+</head>
+<body>
+    <main class="login-shell">
+        <div class="artwork">
+            <img src="{{ asset('banana-login-art.png') }}" alt="Ilustração digital do controle de entradas e saídas de alunos" fetchpriority="high">
+        </div>
+        <section class="login-content" aria-labelledby="login-title">
+            <h1 id="login-title">Bem-vindo</h1>
+            <p class="intro">Entre com sua conta para continuar.</p>
+            <form id="login-form" action="{{ url('/login') }}" method="POST">
+                @csrf
+                <fieldset>
+                    <legend>Você é aluno ou professor?</legend>
+                    <div class="profile-options">
+                        <div class="profile-option"><input type="radio" name="perfil" id="aluno" value="aluno" required><label for="aluno">Aluno</label></div>
+                        <div class="profile-option"><input type="radio" name="perfil" id="professor" value="professor" required><label for="professor">Professor</label></div>
+                    </div>
+                </fieldset>
+                <div class="field"><label for="email">Email</label><input type="email" id="email" name="email" placeholder="seu@email.com" autocomplete="username" required></div>
+                <div class="field"><label for="senha">Senha</label><input type="password" id="senha" name="senha" placeholder="Digite sua senha" autocomplete="current-password" required></div>
+                <p id="login-error" role="alert" aria-live="polite"></p>
+                <button id="entrar" type="submit">Entrar</button>
+                <p class="register-link">Ainda não tem conta? <a href="{{ url('/cadastro_usuario') }}">Cadastre-se</a></p>
+            </form>
+        </section>
+    </main>
+</body>
+</html>
