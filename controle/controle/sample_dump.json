@@ -1,0 +1,14 @@
+{
+  "pages": [
+    { "id": "home", "title": "Página Inicial", "content": "Bem-vindo ao app móvel.\n\nConteúdo vindo do web." },
+    { "id": "about", "title": "Sobre", "content": "Informações sobre o sistema." }
+  ],
+  "users": [
+    { "id": "u1", "name": "Ana Clara", "matricula": "202600123", "turma": "1º Ano A" },
+    { "id": "u2", "name": "João Pedro", "matricula": "202600124", "turma": "2º Ano A" }
+  ],
+  "records": [
+    { "id": "r1", "userId": "u1", "tipo": "Entrada", "data": "2026-09-10", "horario": "08:00" },
+    { "id": "r2", "userId": "u2", "tipo": "Saída", "data": "2026-09-10", "horario": "12:30" }
+  ]
+}

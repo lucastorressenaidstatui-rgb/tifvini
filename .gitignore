@@ -25,3 +25,9 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+/controle.zip
+/controle/controle/.git-local-backup/
+/controle/controle/.claude/
+heidi_config.json
+heidi_dump.json
+/storage/logs/*.pid

@@ -7,7 +7,9 @@ use App\Models\Usuario;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class LoginController extends Controller
 {
@@ -29,22 +31,40 @@ class LoginController extends Controller
             return response()->json(['erro' => 's', 'mensagem' => 'O perfil selecionado não corresponde à sua conta.'], 422);
         }
 
+        $tokenAnterior = $request->cookie('token_usuario', $request->session()->get('token_usuario'));
+        if ($tokenAnterior) {
+            TokenUsuario::where('token', $tokenAnterior)->delete();
+        }
+
+        $token = TokenUsuario::create([
+            'usuario_id' => $usuario->id,
+            'token' => Str::random(64),
+            'valido_ate' => now()->addDays(2),
+        ]);
+
         $request->session()->regenerate();
         $request->session()->put('usuario_id', $usuario->id);
+        $request->session()->put('token_usuario', $token->token);
 
         return response()->json([
             'erro' => 'n',
             'mensagem' => 'Login realizado com sucesso!',
             'redirect' => $usuario->is_professor ? route('historico') : route('registro'),
-        ]);
+        ])->withCookie(Cookie::make('token_usuario', $token->token, 60 * 24 * 2));
     }
 
     public function logout(Request $request): RedirectResponse
     {
+        $tokens = array_filter([
+            $request->cookie('token_usuario'),
+            $request->session()->get('token_usuario'),
+        ]);
+        TokenUsuario::whereIn('token', $tokens)->delete();
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('login');
+        return redirect()->route('login')->withCookie(Cookie::forget('token_usuario'));
     }
 
     public function login_html(Request $request)
