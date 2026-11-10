@@ -1,58 +1,95 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# TIFVini
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sistema de controle de presença e movimentação de alunos com integração de comunicação em tempo real via MQTT, autenticação por perfil e histórico de frequência.
 
-## About Laravel
+## Sobre o projeto
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Este projeto foi desenvolvido para registrar a entrada e saída de alunos em um ambiente escolar, com apoio de dispositivos/sensores conectados por MQTT. A ideia é centralizar o controle de acesso, manter um histórico de movimentações e gerar uma visão clara da frequência dos alunos para professores e administradores.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+A aplicação combina:
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- backend em Laravel para autenticação, regras de negócio e persistência dos dados;
+- comunicação com dispositivos via protocolo MQTT;
+- painel web para professores acompanhar relatórios e históricos;
+- fluxo para alunos realizarem registro de entrada/saída e consultar seu próprio histórico;
+- estrutura preparada para integração com um front-end/mobile em React Native dentro da pasta `controle/controle`.
 
-## Learning Laravel
+## Funcionalidades
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- cadastro e autenticação de usuários;
+- diferenciação entre perfil de aluno e professor;
+- registro de entrada e saída por movimentação;
+- cálculo e armazenamento de frequência;
+- histórico de acessos e relatórios por usuário;
+- controle de acesso exclusivo para professores em áreas administrativas;
+- integração com tópicos MQTT para envio/recebimento de eventos.
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Stack tecnológica
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+- PHP 8.3
+- Laravel 13
+- MySQL / SQLite para persistência
+- MQTT com `php-mqtt/client`
+- React Native / Expo (na pasta `controle/controle`)
 
-## Agentic Development
+## Estrutura do repositório
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+- `app/` — models, controllers, serviços e regras de negócio
+- `routes/` — rotas web e API
+- `database/migrations/` — estrutura das tabelas
+- `config/` — configurações da aplicação, incluindo MQTT
+- `controle/controle/` — aplicação cliente mobile/web em Expo
+- `tests/` — testes automatizados
+
+## Requisitos
+
+- PHP 8.3+
+- Composer
+- Node.js e npm
+- Banco de dados configurado no `.env`
+- Broker MQTT acessível para receber e publicar mensagens
+
+## Como rodar
+
+1. Instale as dependências do PHP:
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+composer install
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+2. Configure o ambiente:
 
-## Contributing
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+3. Configure as variáveis do banco e do MQTT no arquivo `.env`.
 
-## Code of Conduct
+4. Execute as migrações:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+php artisan migrate
+```
 
-## Security Vulnerabilities
+5. Inicie a aplicação:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+php artisan serve
+```
 
-## License
+6. Para o frontend mobile/web da pasta `controle/controle`:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+cd controle/controle
+npm install
+npm start
+```
+
+## Observações
+
+Este projeto foi pensado como uma solução de controle de presença com automação e monitoramento em tempo real, ideal para uso em ambientes acadêmicos ou institucionais que precisam registrar acessos de forma prática e organizada.
+
+## Licença
+
+Este projeto está sob a licença MIT.
